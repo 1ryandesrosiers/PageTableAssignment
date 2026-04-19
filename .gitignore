@@ -1,0 +1,14 @@
+# compiled output
+*.o
+pagingwithatc
+
+# trace/test files
+trace.tr
+trace1.tr
+
+# macOS cruft
+.DS_Store
+
+# editor cruft
+.vscode/
+*.swp
