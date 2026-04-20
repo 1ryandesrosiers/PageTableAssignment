@@ -1,11 +1,11 @@
 // Braydon Johnston RedID: 131049942
-// Ryan Desroisiers RedID: 130096873
+// Ryan Desrosiers RedID: 130096873
 
 #include <cstdlib>
 #include "tlb.h"
 
 TLB *createTLB(int capacity) {
-    TLB *tlb = (TLB *)malloc(sizeof(TLB));
+    TLB *tlb = (TLB *)malloc(sizeof(TLB)); // allocate size 
     if (tlb == NULL) {
         return NULL;
     }
@@ -13,7 +13,7 @@ TLB *createTLB(int capacity) {
     tlb->capacity = capacity;
     tlb->entries = NULL;
 
-    if (capacity > 0) {
+    if (capacity > 0) { 
         tlb->entries = (TLBEntry *)malloc(sizeof(TLBEntry) * capacity);
         if (tlb->entries == NULL) {
             free(tlb);
@@ -35,7 +35,6 @@ void freeTLB(TLB *tlb) {
     if (tlb == NULL) {
         return;
     }
-
     free(tlb->entries);
     free(tlb);
 }
@@ -51,7 +50,7 @@ unsigned int tlbLookup(TLB *tlb, unsigned int vpn, unsigned int time) {
             return tlb->entries[i].pfn;
         }
     }
-
+    // if didnt find it... 
     return TLB_MISS;
 }
 
@@ -80,7 +79,7 @@ void tlbInsert(TLB *tlb, unsigned int vpn, unsigned int pfn, unsigned int time) 
         }
     }
 
-    // all full, evict the LRU one (smallest lastUsed)
+    // all full, evict the LRU one (which is smallest lastUsed)
     int lruIndex = 0;
     unsigned int minTime = tlb->entries[0].lastUsed;
 
@@ -90,7 +89,7 @@ void tlbInsert(TLB *tlb, unsigned int vpn, unsigned int pfn, unsigned int time) 
             lruIndex = i;
         }
     }
-
+    // replace evicted info with new's info
     tlb->entries[lruIndex].vpn = vpn;
     tlb->entries[lruIndex].pfn = pfn;
     tlb->entries[lruIndex].lastUsed = time;

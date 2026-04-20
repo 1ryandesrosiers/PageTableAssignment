@@ -1,12 +1,14 @@
 // Braydon Johnston RedID: 131049942
-// Ryan Desroisiers RedID: 130096873
+// Ryan Desrosiers RedID: 130096873
 
 #include "pageTable.h"
 
-static const unsigned int ADDRESS_BITS = 32; // 32 bit virtual address space
 
-PageTable::PageTable(int levels, int* bits) {
+static const unsigned int addrBits = 32; // says 32 bit virtual address space
+
+PageTable::PageTable(int levels, int* bits) { // constructor, sets up everything needed for later 
     numLevels = levels;
+    // allocate all arrays we'll need 
     bitsPerLevel = new int[numLevels];
     shifts = new unsigned int[numLevels];
     masks = new unsigned int[numLevels];
@@ -18,16 +20,16 @@ PageTable::PageTable(int levels, int* bits) {
         bitsPerLevel[i] = bits[i];
         totalIndexBits += bits[i];
     }
-    offsetBits = ADDRESS_BITS - (unsigned int)totalIndexBits;
-    offsetMask = (1u << offsetBits) - 1u;
+    offsetBits = addrBits - (unsigned int)totalIndexBits;
+    offsetMask = (1u << offsetBits) - 1u; 
     pageSize = 1u << offsetBits;
 
     // build per level shifts, masks, entry counts
     // level 0 is the highest bits so it has the biggest shift
-    int consumedBits = 0;
+    int bitsProcessed = 0;
     for (int i = 0; i < numLevels; i++) {
-        consumedBits += bitsPerLevel[i];
-        shifts[i] = ADDRESS_BITS - (unsigned int)consumedBits;
+        bitsProcessed += bitsPerLevel[i];
+        shifts[i] = addrBits - (unsigned int)bitsProcessed;
         unsigned int lowMask = (1u << bitsPerLevel[i]) - 1u;
         masks[i] = lowMask << shifts[i]; // full position mask for this level
         entryCounts[i] = 1 << bitsPerLevel[i];
@@ -41,57 +43,55 @@ PageTable::PageTable(int levels, int* bits) {
 }
 
 PageTable::~PageTable() {
-    delete root; // recursive delete handles the whole tree
+    delete root; // recursive cleans whole tree
     delete[] bitsPerLevel;
     delete[] shifts;
     delete[] masks;
     delete[] entryCounts;
 }
 
-unsigned int PageTable::extractVPNAtLevel(unsigned int vaddr, int level) const {
-    return (vaddr & masks[level]) >> shifts[level];
+unsigned int PageTable::getVPNatLevel(unsigned int virtualAddr, int level) const {
+    return (virtualAddr & masks[level]) >> shifts[level];
+}
+unsigned int PageTable::getFullVPN(unsigned int virtualAddr) const {
+    return virtualAddr >> offsetBits;
+}
+unsigned int PageTable::getOffset(unsigned int virtualAddr) const {
+    return virtualAddr & offsetMask;
 }
 
-unsigned int PageTable::extractFullVPN(unsigned int vaddr) const {
-    return vaddr >> offsetBits;
-}
-
-unsigned int PageTable::extractOffset(unsigned int vaddr) const {
-    return vaddr & offsetMask;
-}
-
-unsigned int PageTable::lookup(unsigned int vaddr) {
+unsigned int PageTable::lookup(unsigned int virtualAddr) {
     Level* current = root; // start at the root
 
-    for (int level = 0; level < numLevels; level++) {
-        unsigned int index = extractVPNAtLevel(vaddr, level);
+    for (int level = 0; level < numLevels; level++) { // for every level, get index
+        unsigned int index = getVPNatLevel(virtualAddr, level);
 
         if (current->isLeaf) { // at the leaf, grab the mapping
             auto it = current->mapping.find(index);
             if (it == current->mapping.end()) {
-                return PAGE_TABLE_MISS; // not mapped yet
+                return pageTableMISS; // not mapped yet
             }
             return it->second;
         }
 
-        // internal node, go down to the next level
+        // child not there = miss
         if (current->nextLevel[index] == nullptr) {
-            return PAGE_TABLE_MISS; // subtree doesnt exist
+            return pageTableMISS; // subtree doesnt exist
         }
         current = current->nextLevel[index];
     }
 
-    return PAGE_TABLE_MISS; // shouldnt get here unless numLevels <= 0
+    return pageTableMISS; // shouldnt get here unless numLevels <= 0
 }
 
-unsigned int PageTable::insert(unsigned int vaddr) {
+unsigned int PageTable::insert(unsigned int virtualAddr) {
     Level* current = root;
 
     for (int level = 0; level < numLevels; level++) {
-        unsigned int index = extractVPNAtLevel(vaddr, level);
+        unsigned int index = getVPNatLevel(virtualAddr, level);
 
         if (level == numLevels - 1) { // deepest level, put the mapping here
-            unsigned int newFrame = framesAllocated++; // grab next sequential frame
+            unsigned int newFrame = framesAllocated++; // grab next frame
             current->mapping[index] = newFrame;
             return newFrame;
         }
@@ -104,9 +104,9 @@ unsigned int PageTable::insert(unsigned int vaddr) {
         current = current->nextLevel[index];
     }
 
-    return PAGE_TABLE_MISS; // shouldnt hit this
+    return pageTableMISS; // shouldnt hit this
 }
-
+// two f(x)'s for counting 
 unsigned long int PageTable::countEntriesRecursive(Level* node, int level) const {
     if (node == nullptr) {
         return 0;
@@ -123,5 +123,5 @@ unsigned long int PageTable::countEntriesRecursive(Level* node, int level) const
 }
 
 unsigned long int PageTable::countTotalEntries() const {
-    return countEntriesRecursive(root, 0);
+    return countEntriesRecursive(root, 0); // calls recursive count 
 }

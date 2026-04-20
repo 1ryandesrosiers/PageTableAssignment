@@ -1,5 +1,5 @@
 // Braydon Johnston RedID: 131049942
-// Ryan Desroisiers RedID: 130096873
+// Ryan Desrosiers RedID: 130096873
 
 #include <cstdio>
 #include <cstdlib>
@@ -128,8 +128,8 @@ static unsigned int runSimulation(FILE* traceFile,
         }
 
         unsigned int vaddr  = trace.addr;
-        unsigned int offset = pageTable.extractOffset(vaddr);
-        unsigned int vpn    = pageTable.extractFullVPN(vaddr);
+        unsigned int offset = pageTable.getOffset(vaddr);
+        unsigned int vpn    = pageTable.getFullVPN(vaddr);
 
         // offset mode just prints the offset, no translation needed
         if (strcmp(opts.outputMode, MODE_OFFSET) == 0) {
@@ -141,7 +141,7 @@ static unsigned int runSimulation(FILE* traceFile,
         // MMU flow: try TLB first, then page table, then demand page
         bool tlbHit = false;
         bool pageTableHit = false;
-        unsigned int pfn = PAGE_TABLE_MISS;
+        unsigned int pfn = pageTableMISS;
 
         if (tlb != nullptr && opts.tlbCapacity > 0) {
             unsigned int tlbResult = tlbLookup(tlb, vpn, processed);
@@ -153,7 +153,7 @@ static unsigned int runSimulation(FILE* traceFile,
 
         if (!tlbHit) {
             unsigned int ptResult = pageTable.lookup(vaddr);
-            if (ptResult != PAGE_TABLE_MISS) {
+            if (ptResult != pageTableMISS) {
                 pfn = ptResult;
                 pageTableHit = true;
             }
@@ -191,7 +191,7 @@ static unsigned int runSimulation(FILE* traceFile,
         }
         else if (strcmp(opts.outputMode, MODE_VPN2PFN) == 0) {
             for (int i = 0; i < opts.numLevels; i++) {
-                perLevelVPN[i] = pageTable.extractVPNAtLevel(vaddr, i);
+                perLevelVPN[i] = pageTable.getVPNatLevel(vaddr, i);
             }
             log_pagemapping(opts.numLevels, perLevelVPN, pfn);
         }
