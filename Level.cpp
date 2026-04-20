@@ -1,38 +1,30 @@
-#include "Level.h"
+// Braydon Johnston RedID: 131049942
+// Ryan Desrosiers RedID: 130096873
 
-Level::Level(bool leaf, int entries)
-{
-    isLeaf = leaf; 
-    numEntries = entries; 
-    nextLevel = nullptr; 
-    if (isLeaf)
-    {
-        mapping = unordered_map<unsigned int, unsigned int>(); 
-        
+#include "Level.h"
+// just has constructor and destructor for nodes 
+Level::Level(bool leaf, int entries) {
+    isLeaf = leaf;
+    numEntries = entries;
+    nextLevel = nullptr;
+
+    if (isLeaf) {
+        // leaf, mapping is default constructed (empty), nothing to init
     }
-    else // if not a leaf, initialize the nextLevel array
-    {
-        nextLevel = new Level*[numEntries]; 
-        for (int i = 0; i < numEntries; i++)
-        {
-            nextLevel[i] = nullptr; 
+    else { // if not a leaf, init the nextLevel array
+        nextLevel = new Level*[numEntries];
+        for (int i = 0; i < numEntries; i++) {
+            nextLevel[i] = nullptr; // init all children -> null
         }
     }
-
 }
 
-Level::~Level()
-{
-    if (!isLeaf)
-    {
-        for (int i = 0; i < numEntries; i++)
-        {
-            delete nextLevel[i]; 
+Level::~Level() { // destructor 
+    if (!isLeaf && nextLevel != nullptr) {
+        for (int i = 0; i < numEntries; i++) {
+            delete nextLevel[i]; // recursively delete child subtrees
         }
-        delete[] nextLevel; 
+        delete[] nextLevel;
     }
-    else
-    {
-        mapping.clear();
-    }
+    // leaf mapping cleans itself up
 }
