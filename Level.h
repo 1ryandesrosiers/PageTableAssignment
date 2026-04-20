@@ -1,21 +1,19 @@
 // Braydon Johnston RedID: 131049942
-// Ryan Desroisiers RedID: 130096873
+// Ryan Desrosiers RedID: 130096873
 
 #ifndef LEVEL_H
 #define LEVEL_H
 
 #include <unordered_map>
 
-// one node of the page table tree
-// leaf nodes hold the VPN slice -> PFN mapping
-// internal nodes hold an array of child pointers
+// level struct represents EACH NODE in page table tree 
 struct Level {
-    bool isLeaf; // keep track of whether this level is a leaf or not
+    bool isLeaf; // are we at leaf yet ? 
     int numEntries; // number of entries in this level
-    Level** nextLevel; // array of pointers to the next level (if not a leaf)
+    Level** nextLevel; // array of pointers to the next level (if not a leaf) 
     std::unordered_map<unsigned int, unsigned int> mapping; // leaf level mapping
 
-    // param order matches the .cpp implementation
+    // make sure param order matches the .cpp implementation (const & dest)
     Level(bool leaf, int entries);
     ~Level();
 };

@@ -1,8 +1,8 @@
 // Braydon Johnston RedID: 131049942
-// Ryan Desroisiers RedID: 130096873
+// Ryan Desrosiers RedID: 130096873
 
 #include "Level.h"
-
+// just has constructor and destructor for nodes 
 Level::Level(bool leaf, int entries) {
     isLeaf = leaf;
     numEntries = entries;
@@ -14,12 +14,12 @@ Level::Level(bool leaf, int entries) {
     else { // if not a leaf, init the nextLevel array
         nextLevel = new Level*[numEntries];
         for (int i = 0; i < numEntries; i++) {
-            nextLevel[i] = nullptr; // set all child slots to null
+            nextLevel[i] = nullptr; // init all children -> null
         }
     }
 }
 
-Level::~Level() {
+Level::~Level() { // destructor 
     if (!isLeaf && nextLevel != nullptr) {
         for (int i = 0; i < numEntries; i++) {
             delete nextLevel[i]; // recursively delete child subtrees

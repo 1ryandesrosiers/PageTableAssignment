@@ -1,10 +1,10 @@
 // Braydon Johnston RedID: 131049942
-// Ryan Desroisiers RedID: 130096873
+// Ryan Desrosiers RedID: 130096873
 
 #ifndef TLB_H
 #define TLB_H
 
-#define TLB_MISS 0xFFFFFFFF // sentinel for a TLB miss
+#define tlbMISS 0xFFFFFFFF // for a TLB miss, return this val 
 
 typedef struct {
     unsigned int vpn;
@@ -17,10 +17,10 @@ typedef struct {
     TLBEntry *entries;
     int capacity;
 } TLB;
-
-TLB *createTLB(int capacity);
-void freeTLB(TLB *tlb);
-unsigned int tlbLookup(TLB *tlb, unsigned int vpn, unsigned int time);
+// functions 
+TLB *createTLB(int maxSize);
+void freeTLB(TLB *tlb); // clean up memory 
+unsigned int tlbLookup(TLB *tlb, unsigned int vpn, unsigned int time); // lookup and insert just like page table 
 void tlbInsert(TLB *tlb, unsigned int vpn, unsigned int pfn, unsigned int time);
 
 #endif

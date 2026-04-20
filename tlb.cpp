@@ -1,26 +1,26 @@
 // Braydon Johnston RedID: 131049942
-// Ryan Desroisiers RedID: 130096873
+// Ryan Desrosiers RedID: 130096873
 
 #include <cstdlib>
 #include "tlb.h"
 
-TLB *createTLB(int capacity) {
-    TLB *tlb = (TLB *)malloc(sizeof(TLB));
+TLB *createTLB(int maxSize) {
+    TLB *tlb = (TLB *)malloc(sizeof(TLB)); // allocate size 
     if (tlb == NULL) {
         return NULL;
     }
 
-    tlb->capacity = capacity;
+    tlb->capacity = maxSize;
     tlb->entries = NULL;
 
-    if (capacity > 0) {
-        tlb->entries = (TLBEntry *)malloc(sizeof(TLBEntry) * capacity);
+    if (maxSize > 0) { 
+        tlb->entries = (TLBEntry *)malloc(sizeof(TLBEntry) * maxSize);
         if (tlb->entries == NULL) {
             free(tlb);
             return NULL;
         }
 
-        for (int i = 0; i < capacity; i++) { // init all entries to empty
+        for (int i = 0; i < maxSize; i++) { // init all entries to empty
             tlb->entries[i].vpn = 0;
             tlb->entries[i].pfn = 0;
             tlb->entries[i].lastUsed = 0;
@@ -30,19 +30,18 @@ TLB *createTLB(int capacity) {
 
     return tlb;
 }
-
 void freeTLB(TLB *tlb) {
     if (tlb == NULL) {
         return;
     }
-
     free(tlb->entries);
     free(tlb);
 }
 
-unsigned int tlbLookup(TLB *tlb, unsigned int vpn, unsigned int time) {
+unsigned int tlbLookup(TLB *tlb, unsigned int vpn, unsigned int time) 
+{
     if (tlb == NULL || tlb->capacity == 0) {
-        return TLB_MISS;
+        return tlbMISS;
     }
 
     for (int i = 0; i < tlb->capacity; i++) {
@@ -51,18 +50,19 @@ unsigned int tlbLookup(TLB *tlb, unsigned int vpn, unsigned int time) {
             return tlb->entries[i].pfn;
         }
     }
-
-    return TLB_MISS;
+    // if didnt find it... 
+    return tlbMISS;
 }
 
-void tlbInsert(TLB *tlb, unsigned int vpn, unsigned int pfn, unsigned int time) {
+void tlbInsert(TLB *tlb, unsigned int vpn, unsigned int pfn, unsigned int time) 
+{
     if (tlb == NULL || tlb->capacity == 0) {
-        return;
+        return; // if TLB doesnt exist or capacity is 0, cant do anything 
     }
 
     // if vpn is already in cache just update it
     for (int i = 0; i < tlb->capacity; i++) {
-        if (tlb->entries[i].valid && tlb->entries[i].vpn == vpn) {
+        if (tlb->entries[i].valid && tlb->entries[i].vpn == vpn) { // make sure its valid too
             tlb->entries[i].pfn = pfn;
             tlb->entries[i].lastUsed = time;
             return;
@@ -80,7 +80,7 @@ void tlbInsert(TLB *tlb, unsigned int vpn, unsigned int pfn, unsigned int time) 
         }
     }
 
-    // all full, evict the LRU one (smallest lastUsed)
+    // all full, evict the LRU one (which is smallest lastUsed)
     int lruIndex = 0;
     unsigned int minTime = tlb->entries[0].lastUsed;
 
@@ -90,7 +90,7 @@ void tlbInsert(TLB *tlb, unsigned int vpn, unsigned int pfn, unsigned int time) 
             lruIndex = i;
         }
     }
-
+    // replace evicted info with new's info
     tlb->entries[lruIndex].vpn = vpn;
     tlb->entries[lruIndex].pfn = pfn;
     tlb->entries[lruIndex].lastUsed = time;
