@@ -4,7 +4,7 @@
 #ifndef TLB_H
 #define TLB_H
 
-#define TLB_MISS 0xFFFFFFFF // for a TLB miss, return this val 
+#define tlbMISS 0xFFFFFFFF // for a TLB miss, return this val 
 
 typedef struct {
     unsigned int vpn;
@@ -18,9 +18,9 @@ typedef struct {
     int capacity;
 } TLB;
 // functions 
-TLB *createTLB(int capacity);
-void freeTLB(TLB *tlb);
-unsigned int tlbLookup(TLB *tlb, unsigned int vpn, unsigned int time);
+TLB *createTLB(int maxSize);
+void freeTLB(TLB *tlb); // clean up memory 
+unsigned int tlbLookup(TLB *tlb, unsigned int vpn, unsigned int time); // lookup and insert just like page table 
 void tlbInsert(TLB *tlb, unsigned int vpn, unsigned int pfn, unsigned int time);
 
 #endif
