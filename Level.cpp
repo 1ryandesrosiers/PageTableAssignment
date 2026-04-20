@@ -2,7 +2,7 @@
 // Ryan Desrosiers RedID: 130096873
 
 #include "Level.h"
-
+// just has constructor and destructor for nodes 
 Level::Level(bool leaf, int entries) {
     isLeaf = leaf;
     numEntries = entries;

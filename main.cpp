@@ -19,7 +19,7 @@ extern "C" {
 // max total bits across all page table levels, per the spec
 static const int MAX_PAGE_INDEX_BITS = 28;
 
-// output mode tags, used for strcmp with the -o arg
+// output mode tags given in assn 
 static const char* MODE_BITMASKS     = "bitmasks";
 static const char* MODE_VA2PA        = "va2pa";
 static const char* MODE_VA2PA_ATC_PT = "va2pa_atc_ptwalk";
@@ -27,7 +27,7 @@ static const char* MODE_VPN2PFN      = "vpn2pfn";
 static const char* MODE_OFFSET       = "offset";
 static const char* MODE_SUMMARY      = "summary";
 
-// holds everything parsed off the command line
+// holds everything parsed off cmd line
 struct Options {
     const char* tracePath;
     int*        bitsPerLevel;
@@ -37,8 +37,8 @@ struct Options {
     const char* outputMode;
 };
 
-// parse argv into an Options struct, returns true on success
-// on recoverable error prints the required message and returns false
+// parse into struct 
+// remember example code given 
 static bool parseArguments(int argc, char* argv[], Options& opts) {
     opts.tracePath    = nullptr;
     opts.bitsPerLevel = nullptr;
@@ -103,7 +103,7 @@ static bool parseArguments(int argc, char* argv[], Options& opts) {
     return true;
 }
 
-// main simulation loop, address by address
+// look @ address by address 
 // returns the number of addresses actually processed
 static unsigned int runSimulation(FILE* traceFile,
                                   PageTable& pageTable,
@@ -128,7 +128,7 @@ static unsigned int runSimulation(FILE* traceFile,
         }
 
         unsigned int vaddr  = trace.addr;
-        unsigned int offset = pageTable.getOffset(vaddr);
+        unsigned int offset = vaddr & pageTable.offsetMask;
         unsigned int vpn    = pageTable.getFullVPN(vaddr);
 
         // offset mode just prints the offset, no translation needed
@@ -138,14 +138,14 @@ static unsigned int runSimulation(FILE* traceFile,
             continue;
         }
 
-        // MMU flow: try TLB first, then page table, then demand page
+        // try TLB, then IF a MISS go to page table 
         bool tlbHit = false;
         bool pageTableHit = false;
         unsigned int pfn = pageTableMISS;
 
         if (tlb != nullptr && opts.tlbCapacity > 0) {
             unsigned int tlbResult = tlbLookup(tlb, vpn, processed);
-            if (tlbResult != TLB_MISS) {
+            if (tlbResult != tlbMISS) {
                 pfn = tlbResult;
                 tlbHit = true;
             }
@@ -191,7 +191,7 @@ static unsigned int runSimulation(FILE* traceFile,
         }
         else if (strcmp(opts.outputMode, MODE_VPN2PFN) == 0) {
             for (int i = 0; i < opts.numLevels; i++) {
-                perLevelVPN[i] = pageTable.getVPNatLevel(vaddr, i);
+                perLevelVPN[i] = pageTable.getLvlIndex(vaddr, i);
             }
             log_pagemapping(opts.numLevels, perLevelVPN, pfn);
         }
