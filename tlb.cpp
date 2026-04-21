@@ -80,12 +80,14 @@ void tlbInsert(TLB *tlb, unsigned int vpn, unsigned int pfn, unsigned int time)
         }
     }
 
-    // all full, evict the LRU one (which is smallest lastUsed)
-    int lruIndex = 0;
-    unsigned int minTime = tlb->entries[0].lastUsed;
-
-    for (int i = 1; i < tlb->capacity; i++) {
-        if (tlb->entries[i].lastUsed < minTime) {
+    // LRU approx per a4-specs: evict oldest among the 10 most-recently-used
+    int lruIndex = -1;
+    unsigned int minTime = 0;
+    for (int i = 0; i < tlb->capacity; i++) {
+        int moreRecent = 0;
+        for (int j = 0; j < tlb->capacity; j++)
+            if (tlb->entries[j].lastUsed > tlb->entries[i].lastUsed) moreRecent++;
+        if (moreRecent < 10 && (lruIndex == -1 || tlb->entries[i].lastUsed < minTime)) {
             minTime = tlb->entries[i].lastUsed;
             lruIndex = i;
         }
